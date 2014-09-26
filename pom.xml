@@ -27,7 +27,7 @@
   </scm>
 
     <properties>
-        <clojure.version>1.2.0</clojure.version>
+        <clojure.version>1.4.0</clojure.version>
     </properties>
 
     <dependencies>
@@ -36,6 +36,18 @@
         <artifactId>tools.logging</artifactId>
         <version>0.2.3</version>
         <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.clojure</groupId>
+        <artifactId>test.check</artifactId>
+        <version>0.5.9</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.gfredericks</groupId>
+        <artifactId>test.chuck</artifactId>
+        <version>0.1.4</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
 
