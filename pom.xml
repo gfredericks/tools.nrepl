@@ -18,7 +18,7 @@
             <timezone>-5</timezone>
         </developer>
     </developers>
-    
+
     <scm>
         <connection>scm:git:git@github.com:clojure/tools.nrepl.git</connection>
         <developerConnection>scm:git:git@github.com:clojure/tools.nrepl.git</developerConnection>
@@ -37,6 +37,18 @@
         <artifactId>tools.logging</artifactId>
         <version>0.2.3</version>
         <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.clojure</groupId>
+        <artifactId>test.check</artifactId>
+        <version>0.5.9</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.gfredericks</groupId>
+        <artifactId>test.chuck</artifactId>
+        <version>0.1.4</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
 
