@@ -118,25 +118,47 @@
                #(update-in % [%2] into (dependencies middlewares % %2))
                m #{:expects :requires}))))))
 
-(defn- conj-sorted
-  [stack comparator x]
-  (let [comparisons (->> stack
-                      (map-indexed #(vector % (comparator x %2)))
-                      (remove (comp zero? second)))
-        lower (ffirst (filter (comp neg? second) comparisons))
-        upper (ffirst (reverse (filter (comp pos? second) comparisons)))
-        ; default conj'ing at the end, a good default for descriptor-less middlewares
-        [before after] (split-at (or (and upper (inc upper)) lower (count stack)) stack)]
-    (into [] (concat before [x] after))))
+(defn- topologically-sort
+  "Topologically sorts the given middlewares according to the comparator,
+  with the added huristic that any middlewares that have no dependencies
+  will be sorted toward the end."
+  [comparator stack]
+  (let [stack (vec stack)
+        vertices (range (count stack))
+        edges (for [i1 vertices
+                    i2 (range i1)
+                    :let [x (comparator (stack i1) (stack i2))]
+                    :when (not= 0 x)]
+                {:vertices #{i1 i2}
+                 :order (if (neg? x) [i1 i2] [i2 i1])})
+        ;; the trivial vertices have no connections, and we pull them
+        ;; out here so we can make sure they get put on the end
+        trivial-vertices (remove (set (mapcat :vertices edges)) vertices)]
+    (loop [sorted-vertices []
+           remaining-edges edges
+           remaining-vertices (remove (set trivial-vertices) vertices)]
+      (if (seq remaining-vertices)
+        (let [non-initials (->> remaining-edges
+                                (map :order)
+                                (map second)
+                                (set))
+              next-vertex (->> remaining-vertices
+                               (remove non-initials)
+                               (first))]
+          (if next-vertex
+            (recur (conj sorted-vertices next-vertex)
+                   (remove #((:vertices %) next-vertex) remaining-edges)
+                   (remove #{next-vertex} remaining-vertices))
+            ;; TODO: supply a dependency cycle?
+            (throw (Exception. "Unable to satisfy nrepl middleware ordering requirements!"))))
+        (map stack (concat sorted-vertices trivial-vertices))))))
 
 ;; TODO throw exception when the stack doesn't satisfy the requirements of the descriptors involved
 (defn linearize-middleware-stack
   [middlewares]
   (->> middlewares
     extend-deps
-    (sort-by (comp count (partial apply concat) (juxt :expects :requires)))
-    reverse
-    (reduce #(conj-sorted % comparator %2) [])
+    (topologically-sort comparator)
     (map :implemented-by)))
 
 ;;; documentation utilities ;;;

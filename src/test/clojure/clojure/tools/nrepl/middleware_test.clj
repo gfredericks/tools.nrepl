@@ -144,7 +144,7 @@
                reordered (gen-shuffle mids-with-descriptors)]
       [reordered (distinct (map first pairs&flags))])))
 
-(defspec hey-ho 200
+(defspec hey-ho 20
   (prop/for-all [[mids id-pairs] (gen/bind gen-middlewares gen-dependencies)]
     (let [linearized (map :id (linearize-middleware-stack mids))]
       (every? (fn [[prior later]]
