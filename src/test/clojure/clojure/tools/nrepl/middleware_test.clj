@@ -92,3 +92,19 @@
                 ^{::middleware/descriptor
                   {:expects #{"1"} :requires #{}}}
                 {:id 2}])))))
+
+(deftest dependency-cycle-test
+  (binding [middleware/*poop* true]
+    (is (thrown? Exception
+                 (linearize-middleware-stack
+                  [^{::middleware/descriptor
+                     {:expects #{} :requires #{"1"} :handles {"0" {}}}}
+                   {:id 0}
+
+                   ^{::middleware/descriptor
+                     {:expects #{} :requires #{} :handles {"1" {}}}}
+                   {:id 1}
+
+                   ^{::middleware/descriptor
+                     {:expects #{"1"} :requires #{"0"}}}
+                   {:id 2}])))))
